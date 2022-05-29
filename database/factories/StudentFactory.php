@@ -21,6 +21,7 @@ class StudentFactory extends Factory
     {
         return [
             'fullname' => $this->faker->name(),
+            'email' => $this->faker->email(),
             'contact' => $this->faker->phoneNumber(),
             'region' => $this->faker->Address(),
             'course_id' => $this->faker->numberBetween($min = 1, $max = 10),

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Student;
 use App\Models\Services\StudentService;
 use App\Http\Requests\CreateStudentRequest;
+use App\Http\Resources\StudentResource;
 use App\Models\Course;
 use App\Models\Section;
 use App\Models\Status;
@@ -18,18 +19,27 @@ class StudentController extends Controller
     public static function apiRoutes()
     {
         Route::get('/students', [StudentController::class, 'getCollection']);
-        Route::get('/students/{id}', [StudentController::class, 'show']);
+        Route::get('/students/{student}', [StudentController::class, 'show']);
+        Route::get('/students/search/{student}', [StudentController::class, 'search']);
         Route::post('/students', [StudentController::class, 'create']);
+        Route::put('/students/{student}', [StudentController::class, 'update']);
+        Route::delete('/students/{student}', [StudentController::class, 'destroy']);
+        Route::delete('/students/delete', [StudentController::class, 'bulkDelete']);
     }
 
     public function getCollection()
     {
-        return Student::all();
+        return StudentService::collection();
     }
 
-    public function show($id)
+    public function show($student)
     {
-        return Student::findOrFail($id);
+        return StudentService::show($student);
+    }
+
+    public function search($student)
+    {
+        return StudentResource::collection(StudentService::search($student));
     }
 
     public function create(CreateStudentRequest $request)
@@ -48,18 +58,25 @@ class StudentController extends Controller
         }
     }
 
-    public function edit($id)
+    public function update(CreateStudentRequest $request, Student $student)
     {
-        //
+        return $student->Service()->update(
+            $request->validated()['fullname'],
+            $request->validated()['contact'],
+            $request->validated()['region'],
+            Course::findOrFail($request->validated()['course_id']),
+            Section::findorFail($request->validated()['section_id']),
+            Status::findOrFail($request->validated()['status_id'])
+        );
     }
 
-    public function update(Request $request, $id)
+    public function destroy(Student $student)
     {
-        //
+        return $student->delete();
     }
 
-    public function destroy($id)
+    public function bulkDelete(Request $request)
     {
-        //
+        return StudentService::bulkDelete($request['ids']);
     }
 }
